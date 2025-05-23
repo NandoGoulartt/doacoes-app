@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '../../../generated/prisma'
+import { prisma } from '@/lib/prisma'
 import { campanhaSchema, campanhaFilterSchema } from '@/lib/validations/campanha'
 import { JWTPayload } from '@/middleware/auth'
-
-const prisma = new PrismaClient()
 
 export async function GET(request: Request) {
   try {
