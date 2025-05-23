@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface Instituicao {
@@ -31,7 +31,8 @@ interface Doacao {
   }
 }
 
-export default function CampanhaPage({ params }: { params: { id: string } }) {
+export default function CampanhaPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
   const router = useRouter()
   const [campanha, setCampanha] = useState<Campanha | null>(null)
   const [doacoes, setDoacoes] = useState<Doacao[]>([])
@@ -47,11 +48,11 @@ export default function CampanhaPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     loadCampanha()
-  }, [params.id])
+  }, [resolvedParams.id])
 
   async function loadCampanha() {
     try {
-      const response = await fetch(`/api/campanhas/${params.id}`)
+      const response = await fetch(`/api/campanhas/${resolvedParams.id}`)
       const data = await response.json()
 
       if (!response.ok) {
@@ -81,7 +82,7 @@ export default function CampanhaPage({ params }: { params: { id: string } }) {
         body: JSON.stringify({
           ...formData,
           quantidade: parseInt(formData.quantidade),
-          campanha_id: params.id,
+          campanha_id: resolvedParams.id,
         }),
       })
 
