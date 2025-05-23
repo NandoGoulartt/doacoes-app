@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sistema de Doações
 
-## Getting Started
+Este é um sistema de doações desenvolvido com Next.js 14, Prisma, PostgreSQL e API Routes.
 
-First, run the development server:
+## Funcionalidades
 
+- Cadastro e login de usuários (doadores e instituições)
+- Criação e listagem de campanhas de doação
+- Realização de doações
+- Dashboard personalizado por tipo de usuário
+- Filtros de busca por localização e data
+
+## Tecnologias
+
+- Next.js 14 (App Router)
+- Prisma (ORM)
+- PostgreSQL
+- Tailwind CSS
+- JWT para autenticação
+- Zod para validação
+
+## Configuração
+
+1. Clone o repositório:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <url-do-repositorio>
+cd doacoes-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Instale as dependências:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Configure o banco de dados:
+- Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
+```
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/doacoes_db"
+JWT_SECRET="seu-segredo-aqui"
+```
+- Crie o banco de dados PostgreSQL:
+```bash
+createdb doacoes_db
+```
+- Execute as migrações do Prisma:
+```bash
+npx prisma migrate dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Inicie o servidor de desenvolvimento:
+```bash
+npm run dev
+```
 
-## Learn More
+5. Acesse a aplicação em [http://localhost:3000](http://localhost:3000)
 
-To learn more about Next.js, take a look at the following resources:
+## Estrutura do Projeto
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/src/app/api` - Rotas da API
+- `/src/app/(pages)` - Páginas da aplicação
+- `/src/components` - Componentes reutilizáveis
+- `/src/lib` - Utilitários e validações
+- `/prisma` - Schema e migrações do banco de dados
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Endpoints da API
 
-## Deploy on Vercel
+### Autenticação
+- `POST /api/auth/register` - Cadastro de usuário
+- `POST /api/auth/login` - Login de usuário
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Campanhas
+- `GET /api/campanhas` - Lista campanhas com filtros
+- `POST /api/campanhas` - Cria nova campanha (requer autenticação como instituição)
+- `GET /api/campanhas/[id]` - Detalhes da campanha
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Doações
+- `GET /api/doacoes` - Lista doações do usuário
+- `POST /api/doacoes` - Cria nova doação (requer autenticação como doador)
+
+## Licença
+
+MIT
