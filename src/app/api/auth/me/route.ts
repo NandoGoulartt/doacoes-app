@@ -1,0 +1,49 @@
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '../../../../generated/prisma'
+import { JWTPayload } from '@/middleware/auth'
+
+const prisma = new PrismaClient()
+
+export async function GET(request: Request) {
+  try {
+    const userHeader = request.headers.get('user')
+    if (!userHeader) {
+      return NextResponse.json(
+        { error: 'Não autorizado' },
+        { status: 401 }
+      )
+    }
+
+    const payload = JSON.parse(userHeader) as JWTPayload
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.user_id },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        tipo: true,
+      }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Usuário não encontrado' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({ user })
+  } catch (error) {
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json(
+      { error: 'Erro interno do servidor' },
+      { status: 500 }
+    )
+  }
+} 
