@@ -87,6 +87,24 @@ export async function POST(request: Request) {
       )
     }
 
+    const hoje = new Date()
+    const dataInicio = new Date(campanha.data_inicio)
+    const dataFim = new Date(campanha.data_fim)
+
+    if (hoje < dataInicio) {
+      return NextResponse.json(
+        { error: 'Esta campanha ainda não foi iniciada' },
+        { status: 400 }
+      )
+    }
+
+    if (hoje > dataFim) {
+      return NextResponse.json(
+        { error: 'Esta campanha já foi encerrada' },
+        { status: 400 }
+      )
+    }
+
     const doacao = await prisma.doacao.create({
       data: {
         ...validatedData,
@@ -112,6 +130,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(doacao, { status: 201 })
   } catch (error) {
+    console.error('Erro ao criar doação:', error)
+
     if (error instanceof Error) {
       return NextResponse.json(
         { error: error.message },
@@ -122,5 +142,7 @@ export async function POST(request: Request) {
       { error: 'Erro interno do servidor' },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 } 

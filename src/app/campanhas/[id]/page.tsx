@@ -16,6 +16,7 @@ interface Campanha {
   localizacao: string
   data_inicio: string
   data_fim: string
+  status: 'AGUARDANDO' | 'ATIVA' | 'ENCERRADA'
   instituicao: Instituicao
 }
 
@@ -31,6 +32,11 @@ interface Doacao {
   }
 }
 
+interface Estatisticas {
+  totalDoacoes: number
+  numeroDoacoes: number
+}
+
 export default function CampanhaPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const router = useRouter()
@@ -38,6 +44,10 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
   const [doacoes, setDoacoes] = useState<Doacao[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [estatisticas, setEstatisticas] = useState<Estatisticas>({
+    totalDoacoes: 0,
+    numeroDoacoes: 0
+  })
   const [formData, setFormData] = useState({
     descricao: '',
     quantidade: '',
@@ -61,6 +71,7 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
 
       setCampanha(data.campanha)
       setDoacoes(data.doacoes || [])
+      setEstatisticas(data.estatisticas)
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Erro ao carregar campanha')
     } finally {
@@ -153,27 +164,74 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
           <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
             <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
               <div className="sm:col-span-2">
+                <dt className="text-sm font-medium text-gray-500">Status</dt>
+                <dd className="mt-1">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    campanha.status === 'ATIVA'
+                      ? 'bg-green-100 text-green-800'
+                      : campanha.status === 'AGUARDANDO'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-red-100 text-red-800'
+                  }`}>
+                    {campanha.status === 'ATIVA'
+                      ? 'Campanha Ativa'
+                      : campanha.status === 'AGUARDANDO'
+                        ? 'Aguardando Início'
+                        : 'Campanha Encerrada'}
+                  </span>
+                </dd>
+              </div>
+
+              <div className="sm:col-span-2">
                 <dt className="text-sm font-medium text-gray-500">Descrição</dt>
                 <dd className="mt-1 text-sm text-gray-900">{campanha.descricao}</dd>
               </div>
+
               <div>
                 <dt className="text-sm font-medium text-gray-500">Localização</dt>
                 <dd className="mt-1 text-sm text-gray-900">{campanha.localizacao}</dd>
               </div>
+
               <div>
                 <dt className="text-sm font-medium text-gray-500">Instituição</dt>
                 <dd className="mt-1 text-sm text-gray-900">{campanha.instituicao.nome}</dd>
               </div>
+
               <div>
                 <dt className="text-sm font-medium text-gray-500">Data de Início</dt>
                 <dd className="mt-1 text-sm text-gray-900">
                   {new Date(campanha.data_inicio).toLocaleDateString()}
                 </dd>
               </div>
+
               <div>
                 <dt className="text-sm font-medium text-gray-500">Data de Fim</dt>
                 <dd className="mt-1 text-sm text-gray-900">
                   {new Date(campanha.data_fim).toLocaleDateString()}
+                </dd>
+              </div>
+
+              <div className="sm:col-span-2">
+                <dt className="text-sm font-medium text-gray-500">Estatísticas</dt>
+                <dd className="mt-1">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white overflow-hidden rounded-lg border border-gray-200 p-4">
+                      <h4 className="text-sm font-medium text-gray-500 truncate">
+                        Total de Doações
+                      </h4>
+                      <p className="mt-1 text-3xl font-semibold text-gray-900">
+                        {estatisticas.totalDoacoes}
+                      </p>
+                    </div>
+                    <div className="bg-white overflow-hidden rounded-lg border border-gray-200 p-4">
+                      <h4 className="text-sm font-medium text-gray-500 truncate">
+                        Número de Doadores
+                      </h4>
+                      <p className="mt-1 text-3xl font-semibold text-gray-900">
+                        {estatisticas.numeroDoacoes}
+                      </p>
+                    </div>
+                  </div>
                 </dd>
               </div>
             </dl>
@@ -182,66 +240,92 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
 
         <div className="mt-8">
           <h4 className="text-lg font-medium text-gray-900">Fazer uma doação</h4>
-          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <div>
-              <label htmlFor="descricao" className="block text-sm font-medium text-gray-700">
-                Descrição
-              </label>
-              <textarea
-                id="descricao"
-                name="descricao"
-                rows={3}
-                required
-                value={formData.descricao}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label htmlFor="quantidade" className="block text-sm font-medium text-gray-700">
-                Quantidade
-              </label>
-              <input
-                type="number"
-                id="quantidade"
-                name="quantidade"
-                required
-                min="1"
-                value={formData.quantidade}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label htmlFor="foto_url" className="block text-sm font-medium text-gray-700">
-                URL da Foto (opcional)
-              </label>
-              <input
-                type="url"
-                id="foto_url"
-                name="foto_url"
-                value={formData.foto_url}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-
-            {formError && (
-              <div className="rounded-md bg-red-50 p-4">
-                <div className="text-sm text-red-700">{formError}</div>
+          {campanha.status !== 'ATIVA' ? (
+            <div className="mt-4 rounded-md bg-yellow-50 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.485 2.495c.873-1.562 3.157-1.562 4.03 0l6.28 11.226c.875 1.562-.217 3.519-2.015 3.519H4.22c-1.798 0-2.89-1.957-2.015-3.519l6.28-11.226zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">
+                    {campanha.status === 'AGUARDANDO'
+                      ? 'Esta campanha ainda não foi iniciada'
+                      : 'Esta campanha já foi encerrada'}
+                  </h3>
+                  <div className="mt-2 text-sm text-yellow-700">
+                    <p>
+                      {campanha.status === 'AGUARDANDO'
+                        ? `A campanha iniciará em ${new Date(campanha.data_inicio).toLocaleDateString()}`
+                        : `A campanha foi encerrada em ${new Date(campanha.data_fim).toLocaleDateString()}`}
+                    </p>
+                  </div>
+                </div>
               </div>
-            )}
-
-            <div>
-              <button
-                type="submit"
-                disabled={formLoading}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                {formLoading ? 'Enviando...' : 'Fazer Doação'}
-              </button>
             </div>
-          </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+              <div>
+                <label htmlFor="descricao" className="block text-sm font-medium text-gray-700">
+                  Descrição
+                </label>
+                <textarea
+                  id="descricao"
+                  name="descricao"
+                  rows={3}
+                  required
+                  value={formData.descricao}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="quantidade" className="block text-sm font-medium text-gray-700">
+                  Quantidade
+                </label>
+                <input
+                  type="number"
+                  id="quantidade"
+                  name="quantidade"
+                  required
+                  min="1"
+                  value={formData.quantidade}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="foto_url" className="block text-sm font-medium text-gray-700">
+                  URL da Foto (opcional)
+                </label>
+                <input
+                  type="url"
+                  id="foto_url"
+                  name="foto_url"
+                  value={formData.foto_url}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+
+              {formError && (
+                <div className="rounded-md bg-red-50 p-4">
+                  <div className="text-sm text-red-700">{formError}</div>
+                </div>
+              )}
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={formLoading}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                >
+                  {formLoading ? 'Enviando...' : 'Fazer Doação'}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
 
         <div className="mt-8">

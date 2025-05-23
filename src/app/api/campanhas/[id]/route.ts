@@ -28,6 +28,16 @@ export async function GET(
       )
     }
 
+    const hoje = new Date()
+    const dataInicio = new Date(campanha.data_inicio)
+    const dataFim = new Date(campanha.data_fim)
+
+    const status = hoje < dataInicio 
+      ? 'AGUARDANDO'
+      : hoje > dataFim 
+        ? 'ENCERRADA' 
+        : 'ATIVA'
+
     const doacoes = await prisma.doacao.findMany({
       where: { campanha_id: params.id },
       include: {
@@ -43,14 +53,27 @@ export async function GET(
       }
     })
 
+    const totalDoacoes = doacoes.reduce((acc, doacao) => acc + doacao.quantidade, 0)
+
     return NextResponse.json({
-      campanha,
+      campanha: {
+        ...campanha,
+        status,
+      },
       doacoes,
+      estatisticas: {
+        totalDoacoes,
+        numeroDoacoes: doacoes.length,
+      }
     })
   } catch (error) {
+    console.error('Erro ao buscar campanha:', error)
+    
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 } 
