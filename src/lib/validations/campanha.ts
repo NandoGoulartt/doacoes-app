@@ -9,9 +9,9 @@ export const campanhaSchema = z.object({
 })
 
 export const campanhaFilterSchema = z.object({
-  localizacao: z.string().optional(),
-  data_inicio: z.string().optional().transform((str) => str ? new Date(str) : undefined),
-  data_fim: z.string().optional().transform((str) => str ? new Date(str) : undefined),
+  localizacao: z.string().nullable().optional(),
+  data_inicio: z.string().nullable().optional().transform((str) => str ? new Date(str) : undefined),
+  data_fim: z.string().nullable().optional().transform((str) => str ? new Date(str) : undefined),
 })
 
 export type CampanhaInput = z.infer<typeof campanhaSchema>

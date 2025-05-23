@@ -30,6 +30,7 @@ export async function GET(request: Request) {
       })
     }
 
+    const hoje = new Date()
     const campanhas = await prisma.campanha.findMany({
       where,
       include: {
@@ -43,7 +44,24 @@ export async function GET(request: Request) {
       }
     })
 
-    return NextResponse.json(campanhas)
+    // Adiciona o status para cada campanha
+    const campanhasComStatus = campanhas.map(campanha => {
+      const dataInicio = new Date(campanha.data_inicio)
+      const dataFim = new Date(campanha.data_fim)
+      
+      const status = hoje < dataInicio 
+        ? 'AGUARDANDO'
+        : hoje > dataFim 
+          ? 'ENCERRADA' 
+          : 'ATIVA'
+
+      return {
+        ...campanha,
+        status
+      }
+    })
+
+    return NextResponse.json(campanhasComStatus)
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json(
