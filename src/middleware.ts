@@ -90,6 +90,7 @@ export const config = {
     '/campanhas/:path*',
     '/api/campanhas/:path*',
     '/api/doacoes/:path*',
-    '/api/auth/me/:path*',
+    '/api/auth/me',
+    '/perfil',
   ],
 } 
