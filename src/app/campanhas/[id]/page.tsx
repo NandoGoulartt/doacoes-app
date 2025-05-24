@@ -355,7 +355,7 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
                           Total de Doações
                         </h4>
                         <p className="mt-1 text-3xl font-semibold text-gray-900">
-                          {estatisticas.totalDoacoes}
+                          R$ {estatisticas.totalDoacoes.toFixed(2)}
                         </p>
                       </div>
                       <div className="bg-white overflow-hidden rounded-lg border border-gray-200 p-4">

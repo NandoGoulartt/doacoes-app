@@ -54,11 +54,9 @@ export async function GET(
       }
     })
 
-    const totalDoacoes = doacoes.reduce((acc, doacao) => {
-      if (doacao.valor) return acc + doacao.valor
-      if (doacao.quantidade) return acc + doacao.quantidade
-      return acc
-    }, 0)
+    const totalDoacoes = campanha.tipo === 'VAQUINHA'
+      ? doacoes.reduce((acc, doacao) => acc + (doacao.valor || 0), 0)
+      : doacoes.reduce((acc, doacao) => acc + (doacao.quantidade || 0), 0)
 
     return NextResponse.json({
       campanha: {
@@ -71,7 +69,7 @@ export async function GET(
         numeroDoacoes: doacoes.length,
       }
     })
-  } catch (error) {    
+  } catch (_error) {    
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }
