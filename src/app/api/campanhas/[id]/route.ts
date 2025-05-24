@@ -33,20 +33,11 @@ export async function GET(
     const dataInicio = new Date(campanha.data_inicio)
     const dataFim = new Date(campanha.data_fim)
 
-    console.log('Debug datas:', {
-      hoje: hoje.toISOString(),
-      dataInicio: dataInicio.toISOString(),
-      dataFim: dataFim.toISOString(),
-      campanha_id: id
-    })
-
     const status = hoje < dataInicio 
       ? 'AGUARDANDO'
       : hoje > dataFim 
         ? 'ENCERRADA' 
         : 'ATIVA'
-
-    console.log('Status calculado:', status)
 
     const doacoes = await prisma.doacao.findMany({
       where: { campanha_id: id },
@@ -80,9 +71,7 @@ export async function GET(
         numeroDoacoes: doacoes.length,
       }
     })
-  } catch (error) {
-    console.error('Erro ao buscar campanha:', error)
-    
+  } catch (error) {    
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }

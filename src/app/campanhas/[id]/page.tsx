@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import PixModal from '@/components/PixModal'
 
 interface Instituicao {
   id: string
@@ -82,6 +83,7 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
   })
   const [formError, setFormError] = useState<string | null>(null)
   const [formLoading, setFormLoading] = useState(false)
+  const [showPixModal, setShowPixModal] = useState(false)
 
   useEffect(() => {
     loadCampanha()
@@ -89,6 +91,7 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
 
   async function loadCampanha() {
     try {
+      setLoading(true)
       const response = await fetch(`/api/campanhas/${id}`)
       const data = await response.json()
 
@@ -100,7 +103,6 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
         throw new Error('Dados da campanha não encontrados')
       }
 
-      // Garantir que os arrays existam mesmo que vazios
       const campanha = {
         ...data.campanha,
         itens_necessarios: data.campanha.itens_necessarios || [],
@@ -109,7 +111,11 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
 
       setCampanha(campanha)
       setDoacoes(data.doacoes || [])
-      setEstatisticas(data.estatisticas)
+      setEstatisticas({
+        totalDoacoes: data.estatisticas?.totalDoacoes || 0,
+        numeroDoacoes: data.estatisticas?.numeroDoacoes || 0
+      })
+      setError(null)
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Erro ao carregar campanha')
     } finally {
@@ -120,6 +126,16 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setFormError(null)
+
+    if (campanha?.tipo === 'VAQUINHA') {
+      setShowPixModal(true)
+      return
+    }
+
+    await realizarDoacao()
+  }
+
+  async function realizarDoacao() {
     setFormLoading(true)
 
     try {
@@ -142,13 +158,15 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
         throw new Error(data.error || 'Erro ao fazer doação')
       }
 
-      setDoacoes([data, ...doacoes])
+      await loadCampanha()
+
       setFormData({
         descricao: '',
         valor: '',
         quantidade: '',
         foto_url: '',
       })
+      setShowPixModal(false)
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Erro ao fazer doação')
     } finally {
@@ -284,7 +302,7 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
                     <dt className="text-sm font-medium text-gray-500">Itens Necessários</dt>
                     <dd className="mt-2">
                       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
-                        {campanha.itens_necessarios?.map((item) => (
+                        {campanha.itens_necessarios.map((item) => (
                           <li
                             key={item.id}
                             className="flex items-center justify-between py-3 pl-3 pr-4 text-sm"
@@ -307,7 +325,7 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
                     <dt className="text-sm font-medium text-gray-500">Pontos de Coleta</dt>
                     <dd className="mt-2">
                       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
-                        {campanha.pontos_coleta?.map((ponto) => (
+                        {campanha.pontos_coleta.map((ponto) => (
                           <li
                             key={ponto.id}
                             className="flex items-center justify-between py-3 pl-3 pr-4 text-sm"
@@ -518,6 +536,16 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
             )}
           </div>
         </div>
+
+        {campanha?.tipo === 'VAQUINHA' && showPixModal && (
+          <PixModal
+            isOpen={showPixModal}
+            onClose={() => setShowPixModal(false)}
+            valor={parseFloat(formData.valor || '0')}
+            onPaymentComplete={realizarDoacao}
+            campanha={campanha}
+          />
+        )}
       </div>
     </div>
   )

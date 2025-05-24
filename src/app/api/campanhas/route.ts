@@ -76,7 +76,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json(campanhasComStatus)
   } catch (error) {
-    console.error('Erro ao listar campanhas:', error)
     return NextResponse.json(
       { error: 'Erro ao listar campanhas' },
       { status: 500 }
@@ -99,7 +98,6 @@ export async function POST(request: Request) {
     const body = await request.json()
     const validatedData = campanhaSchema.parse(body)
 
-    // Validações específicas por tipo
     if (validatedData.tipo !== 'VAQUINHA') {
       if (!validatedData.itens_necessarios?.length) {
         return NextResponse.json(
@@ -135,15 +133,8 @@ export async function POST(request: Request) {
       },
     })
 
-    console.log('Campanha criada:', {
-      id: campanha.id,
-      data_inicio: campanha.data_inicio,
-      data_fim: campanha.data_fim
-    })
-
     return NextResponse.json(campanha)
   } catch (error) {
-    console.error('Erro ao criar campanha:', error)
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Dados inválidos', details: error.errors },
