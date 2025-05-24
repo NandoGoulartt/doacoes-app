@@ -39,7 +39,7 @@ interface Estatisticas {
 }
 
 export default function CampanhaPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params)
+  const { id } = use(params)
   const router = useRouter()
   const [campanha, setCampanha] = useState<Campanha | null>(null)
   const [doacoes, setDoacoes] = useState<Doacao[]>([])
@@ -59,11 +59,11 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
 
   useEffect(() => {
     loadCampanha()
-  }, [resolvedParams.id])
+  }, [id])
 
   async function loadCampanha() {
     try {
-      const response = await fetch(`/api/campanhas/${resolvedParams.id}`)
+      const response = await fetch(`/api/campanhas/${id}`)
       const data = await response.json()
 
       if (!response.ok) {
@@ -94,7 +94,7 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
         body: JSON.stringify({
           ...formData,
           quantidade: parseInt(formData.quantidade),
-          campanha_id: resolvedParams.id,
+          campanha_id: id,
         }),
       })
 

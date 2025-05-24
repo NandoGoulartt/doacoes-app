@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const campanha = await prisma.campanha.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         instituicao: {
           select: {
@@ -37,7 +38,7 @@ export async function GET(
         : 'ATIVA'
 
     const doacoes = await prisma.doacao.findMany({
-      where: { campanha_id: params.id },
+      where: { campanha_id: id },
       include: {
         doador: {
           select: {
