@@ -65,11 +65,6 @@ export default function MinhasDoacoesPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
           <p className="text-red-600 text-center">{error}</p>
-          <div className="mt-4 text-center">
-            <Link href="/dashboard" className="text-indigo-600 hover:text-indigo-500">
-              Voltar para o Dashboard
-            </Link>
-          </div>
         </div>
       </div>
     )
