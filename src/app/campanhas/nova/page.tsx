@@ -120,7 +120,7 @@ export default function NovaCampanhaPage() {
                 name="tipo"
                 value={tipoCampanha}
                 onChange={(e) => setTipoCampanha(e.target.value as 'VAQUINHA' | 'ALIMENTE' | 'ROUPA')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900"
               >
                 <option value="VAQUINHA">Vaquinha (Doação em dinheiro)</option>
                 <option value="ALIMENTE">Alimente (Doação de alimentos)</option>
@@ -137,8 +137,8 @@ export default function NovaCampanhaPage() {
                 name="titulo"
                 type="text"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                placeholder="Título da campanha"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
+                placeholder="Digite o título da campanha"
               />
             </div>
 
@@ -151,8 +151,8 @@ export default function NovaCampanhaPage() {
                 name="descricao"
                 rows={4}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                placeholder="Descrição detalhada da campanha"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
+                placeholder="Descreva os detalhes da sua campanha"
               />
             </div>
 
@@ -165,8 +165,8 @@ export default function NovaCampanhaPage() {
                 name="localizacao"
                 type="text"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                placeholder="Localização"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
+                placeholder="Digite a localização da campanha"
               />
             </div>
 
@@ -179,7 +179,7 @@ export default function NovaCampanhaPage() {
                 name="data_inicio"
                 type="date"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900"
               />
             </div>
 
@@ -192,7 +192,7 @@ export default function NovaCampanhaPage() {
                 name="data_fim"
                 type="date"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900"
               />
             </div>
 
@@ -241,7 +241,7 @@ export default function NovaCampanhaPage() {
                     {itensNecessarios.map((item, index) => (
                       <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                         <div>
-                          <p className="font-medium">{item.nome}</p>
+                          <p className="font-medium text-gray-900">{item.nome}</p>
                           {item.descricao && <p className="text-sm text-gray-500">{item.descricao}</p>}
                         </div>
                         <button
@@ -259,19 +259,19 @@ export default function NovaCampanhaPage() {
                         value={novoItem.nome}
                         onChange={(e) => setNovoItem({ ...novoItem, nome: e.target.value })}
                         placeholder="Nome do item"
-                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
                       />
                       <input
                         type="text"
                         value={novoItem.descricao}
                         onChange={(e) => setNovoItem({ ...novoItem, descricao: e.target.value })}
                         placeholder="Descrição (opcional)"
-                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
                       />
                       <button
                         type="button"
                         onClick={adicionarItem}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                       >
                         Adicionar
                       </button>
@@ -285,7 +285,7 @@ export default function NovaCampanhaPage() {
                     {pontosColeta.map((ponto, index) => (
                       <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                         <div>
-                          <p className="font-medium">{ponto.nome}</p>
+                          <p className="font-medium text-gray-900">{ponto.nome}</p>
                           <p className="text-sm text-gray-500">{ponto.endereco}</p>
                           <p className="text-sm text-gray-500">Horário: {ponto.horario}</p>
                         </div>
@@ -304,27 +304,27 @@ export default function NovaCampanhaPage() {
                         value={novoPonto.nome}
                         onChange={(e) => setNovoPonto({ ...novoPonto, nome: e.target.value })}
                         placeholder="Nome do local"
-                        className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
                       />
                       <input
                         type="text"
                         value={novoPonto.endereco}
                         onChange={(e) => setNovoPonto({ ...novoPonto, endereco: e.target.value })}
                         placeholder="Endereço"
-                        className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
                       />
                       <input
                         type="text"
                         value={novoPonto.horario}
                         onChange={(e) => setNovoPonto({ ...novoPonto, horario: e.target.value })}
                         placeholder="Horário de funcionamento"
-                        className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
                       />
                     </div>
                     <button
                       type="button"
                       onClick={adicionarPonto}
-                      className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                      className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
                       Adicionar Ponto de Coleta
                     </button>
