@@ -3,10 +3,17 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-interface Instituicao {
+interface ItemNecessario {
   id: string
   nome: string
-  email: string
+  descricao?: string
+}
+
+interface PontoColeta {
+  id: string
+  nome: string
+  endereco: string
+  horario: string
 }
 
 interface Campanha {
@@ -16,7 +23,16 @@ interface Campanha {
   localizacao: string
   data_inicio: string
   data_fim: string
-  instituicao: Instituicao
+  tipo: 'VAQUINHA' | 'ALIMENTE' | 'ROUPA'
+  busca_doacoes: boolean
+  status: 'AGUARDANDO' | 'ATIVA' | 'ENCERRADA'
+  instituicao: {
+    id: string
+    nome: string
+    email: string
+  }
+  itens_necessarios: ItemNecessario[]
+  pontos_coleta: PontoColeta[]
 }
 
 export default function CampanhasPage() {
@@ -126,31 +142,113 @@ export default function CampanhasPage() {
               key={campanha.id}
               className="bg-white overflow-hidden shadow rounded-lg"
             >
-              <div className="p-6">
-                <h3 className="text-lg font-medium text-gray-900">
-                  {campanha.titulo}
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
+              <div className="p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-medium text-gray-900 truncate">
+                      {campanha.titulo}
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {campanha.instituicao.nome}
+                    </p>
+                  </div>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    campanha.status === 'ATIVA'
+                      ? 'bg-green-100 text-green-800'
+                      : campanha.status === 'AGUARDANDO'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-red-100 text-red-800'
+                  }`}>
+                    {campanha.status === 'ATIVA'
+                      ? 'Ativa'
+                      : campanha.status === 'AGUARDANDO'
+                        ? 'Aguardando'
+                        : 'Encerrada'}
+                  </span>
+                </div>
+
+                <div className="mt-4">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {campanha.tipo === 'VAQUINHA'
+                      ? 'Vaquinha'
+                      : campanha.tipo === 'ALIMENTE'
+                        ? 'Alimente'
+                        : 'Roupa'}
+                  </span>
+                </div>
+
+                <p className="mt-4 text-sm text-gray-500 line-clamp-2">
                   {campanha.descricao}
                 </p>
+
+                {campanha.tipo !== 'VAQUINHA' && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium text-gray-900">
+                      Itens Necessários
+                    </h4>
+                    <div className="mt-2">
+                      <div className="flex flex-wrap gap-2">
+                        {campanha.itens_necessarios.map((item) => (
+                          <span
+                            key={item.id}
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                          >
+                            {item.nome}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-4">
-                  <div className="text-sm text-gray-500">
-                    📍 {campanha.localizacao}
+                  <div className="flex items-center text-sm text-gray-500">
+                    <svg
+                      className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    {campanha.localizacao}
                   </div>
-                  <div className="mt-1 text-sm text-gray-500">
-                    👤 {campanha.instituicao.nome}
-                  </div>
-                  <div className="mt-1 text-sm text-gray-500">
-                    📅 {new Date(campanha.data_inicio).toLocaleDateString()} até{' '}
+                  <div className="mt-2 flex items-center text-sm text-gray-500">
+                    <svg
+                      className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    {new Date(campanha.data_inicio).toLocaleDateString()} até{' '}
                     {new Date(campanha.data_fim).toLocaleDateString()}
                   </div>
                 </div>
-                <div className="mt-6">
+
+                <div className="mt-4">
                   <Link
                     href={`/campanhas/${campanha.id}`}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
-                    Ver detalhes
+                    Ver Detalhes
                   </Link>
                 </div>
               </div>

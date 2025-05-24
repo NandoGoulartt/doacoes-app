@@ -16,7 +16,9 @@ export async function GET(
             nome: true,
             email: true,
           }
-        }
+        },
+        itens_necessarios: true,
+        pontos_coleta: true
       }
     })
 
@@ -31,11 +33,20 @@ export async function GET(
     const dataInicio = new Date(campanha.data_inicio)
     const dataFim = new Date(campanha.data_fim)
 
+    console.log('Debug datas:', {
+      hoje: hoje.toISOString(),
+      dataInicio: dataInicio.toISOString(),
+      dataFim: dataFim.toISOString(),
+      campanha_id: id
+    })
+
     const status = hoje < dataInicio 
       ? 'AGUARDANDO'
       : hoje > dataFim 
         ? 'ENCERRADA' 
         : 'ATIVA'
+
+    console.log('Status calculado:', status)
 
     const doacoes = await prisma.doacao.findMany({
       where: { campanha_id: id },
@@ -52,7 +63,11 @@ export async function GET(
       }
     })
 
-    const totalDoacoes = doacoes.reduce((acc, doacao) => acc + doacao.quantidade, 0)
+    const totalDoacoes = doacoes.reduce((acc, doacao) => {
+      if (doacao.valor) return acc + doacao.valor
+      if (doacao.quantidade) return acc + doacao.quantidade
+      return acc
+    }, 0)
 
     return NextResponse.json({
       campanha: {

@@ -18,6 +18,12 @@ enum TipoUsuario {
   INSTITUICAO
 }
 
+enum TipoCampanha {
+  VAQUINHA
+  ALIMENTE
+  ROUPA
+}
+
 model User {
   id         String      @id @default(cuid())
   nome       String
@@ -31,23 +37,49 @@ model User {
 }
 
 model Campanha {
-  id             String    @id @default(cuid())
+  id             String         @id @default(cuid())
   titulo         String
   descricao      String
+  tipo           TipoCampanha
   localizacao    String
   data_inicio    DateTime
   data_fim       DateTime
-  instituicao    User      @relation("InstituicaoCampanhas", fields: [instituicao_id], references: [id])
+  instituicao    User          @relation("InstituicaoCampanhas", fields: [instituicao_id], references: [id])
   instituicao_id String
   doacoes        Doacao[]
-  created_at     DateTime  @default(now())
-  updated_at     DateTime  @updatedAt
+  itens_necessarios ItemNecessario[]
+  pontos_coleta    PontoColeta[]
+  busca_doacoes    Boolean       @default(false)
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt
+}
+
+model ItemNecessario {
+  id          String    @id @default(cuid())
+  nome        String
+  descricao   String?
+  campanha    Campanha  @relation(fields: [campanha_id], references: [id], onDelete: Cascade)
+  campanha_id String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+}
+
+model PontoColeta {
+  id          String    @id @default(cuid())
+  nome        String
+  endereco    String
+  horario     String
+  campanha    Campanha  @relation(fields: [campanha_id], references: [id], onDelete: Cascade)
+  campanha_id String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
 }
 
 model Doacao {
   id           String    @id @default(cuid())
   descricao    String
-  quantidade   Int
+  quantidade   Int?     
+  valor        Float?  
   foto_url     String?
   campanha     Campanha  @relation(fields: [campanha_id], references: [id])
   campanha_id  String
