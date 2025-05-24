@@ -16,7 +16,9 @@ export async function GET(
             nome: true,
             email: true,
           }
-        }
+        },
+        itens_necessarios: true,
+        pontos_coleta: true
       }
     })
 
@@ -52,7 +54,9 @@ export async function GET(
       }
     })
 
-    const totalDoacoes = doacoes.reduce((acc, doacao) => acc + doacao.quantidade, 0)
+    const totalDoacoes = campanha.tipo === 'VAQUINHA'
+      ? doacoes.reduce((acc, doacao) => acc + (doacao.valor || 0), 0)
+      : doacoes.reduce((acc, doacao) => acc + (doacao.quantidade || 0), 0)
 
     return NextResponse.json({
       campanha: {
@@ -65,9 +69,7 @@ export async function GET(
         numeroDoacoes: doacoes.length,
       }
     })
-  } catch (error) {
-    console.error('Erro ao buscar campanha:', error)
-    
+  } catch  {    
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }

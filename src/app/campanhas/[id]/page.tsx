@@ -3,11 +3,25 @@
 import { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import PixModal from '@/components/PixModal'
 
 interface Instituicao {
   id: string
   nome: string
   email: string
+}
+
+interface ItemNecessario {
+  id: string
+  nome: string
+  descricao?: string
+}
+
+interface PontoColeta {
+  id: string
+  nome: string
+  endereco: string
+  horario: string
 }
 
 interface Campanha {
@@ -17,14 +31,26 @@ interface Campanha {
   localizacao: string
   data_inicio: string
   data_fim: string
+  tipo: 'VAQUINHA' | 'ALIMENTE' | 'ROUPA'
+  busca_doacoes: boolean
   status: 'AGUARDANDO' | 'ATIVA' | 'ENCERRADA'
   instituicao: Instituicao
+  itens_necessarios: ItemNecessario[]
+  pontos_coleta: PontoColeta[]
+}
+
+interface FormData {
+  descricao: string
+  valor?: string
+  quantidade?: string
+  foto_url: string
 }
 
 interface Doacao {
   id: string
   descricao: string
-  quantidade: number
+  quantidade?: number
+  valor?: number
   foto_url?: string
   data_doacao: string
   doador: {
@@ -49,13 +75,15 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
     totalDoacoes: 0,
     numeroDoacoes: 0
   })
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     descricao: '',
+    valor: '',
     quantidade: '',
     foto_url: '',
   })
   const [formError, setFormError] = useState<string | null>(null)
   const [formLoading, setFormLoading] = useState(false)
+  const [showPixModal, setShowPixModal] = useState(false)
 
   useEffect(() => {
     loadCampanha()
@@ -63,6 +91,7 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
 
   async function loadCampanha() {
     try {
+      setLoading(true)
       const response = await fetch(`/api/campanhas/${id}`)
       const data = await response.json()
 
@@ -70,9 +99,23 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
         throw new Error(data.error || 'Erro ao carregar campanha')
       }
 
-      setCampanha(data.campanha)
+      if (!data.campanha) {
+        throw new Error('Dados da campanha não encontrados')
+      }
+
+      const campanha = {
+        ...data.campanha,
+        itens_necessarios: data.campanha.itens_necessarios || [],
+        pontos_coleta: data.campanha.pontos_coleta || []
+      }
+
+      setCampanha(campanha)
       setDoacoes(data.doacoes || [])
-      setEstatisticas(data.estatisticas)
+      setEstatisticas({
+        totalDoacoes: data.estatisticas?.totalDoacoes || 0,
+        numeroDoacoes: data.estatisticas?.numeroDoacoes || 0
+      })
+      setError(null)
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Erro ao carregar campanha')
     } finally {
@@ -80,21 +123,32 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
     setFormError(null)
+
+    if (campanha?.tipo === 'VAQUINHA') {
+      setShowPixModal(true)
+      return
+    }
+
+    await realizarDoacao()
+  }
+
+  async function realizarDoacao() {
     setFormLoading(true)
 
     try {
-      const response = await fetch('/api/doacoes', {
+      const response = await fetch(`/api/campanhas/${id}/doacoes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formData,
-          quantidade: parseInt(formData.quantidade),
-          campanha_id: id,
+          descricao: formData.descricao,
+          valor: formData.valor ? parseFloat(formData.valor) : undefined,
+          quantidade: formData.quantidade ? parseInt(formData.quantidade) : undefined,
+          foto_url: formData.foto_url || undefined,
         }),
       })
 
@@ -104,12 +158,15 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
         throw new Error(data.error || 'Erro ao fazer doação')
       }
 
+      await loadCampanha()
+
       setFormData({
         descricao: '',
+        valor: '',
         quantidade: '',
         foto_url: '',
       })
-      loadCampanha()
+      setShowPixModal(false)
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Erro ao fazer doação')
     } finally {
@@ -193,6 +250,17 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
               </div>
 
               <div className="sm:col-span-2">
+                <dt className="text-sm font-medium text-gray-500">Tipo de Campanha</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {campanha.tipo === 'VAQUINHA'
+                    ? 'Vaquinha (Doação em dinheiro)'
+                    : campanha.tipo === 'ALIMENTE'
+                      ? 'Alimente (Doação de alimentos)'
+                      : 'Roupa (Doação de roupas)'}
+                </dd>
+              </div>
+
+              <div className="sm:col-span-2">
                 <dt className="text-sm font-medium text-gray-500">Descrição</dt>
                 <dd className="mt-1 text-sm text-gray-900">{campanha.descricao}</dd>
               </div>
@@ -221,122 +289,224 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
                 </dd>
               </div>
 
-              <div className="sm:col-span-2">
-                <dt className="text-sm font-medium text-gray-500">Estatísticas</dt>
-                <dd className="mt-1">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white overflow-hidden rounded-lg border border-gray-200 p-4">
-                      <h4 className="text-sm font-medium text-gray-500 truncate">
-                        Total de Doações
-                      </h4>
-                      <p className="mt-1 text-3xl font-semibold text-gray-900">
-                        {estatisticas.totalDoacoes}
-                      </p>
-                    </div>
-                    <div className="bg-white overflow-hidden rounded-lg border border-gray-200 p-4">
-                      <h4 className="text-sm font-medium text-gray-500 truncate">
-                        Número de Doadores
-                      </h4>
-                      <p className="mt-1 text-3xl font-semibold text-gray-900">
-                        {estatisticas.numeroDoacoes}
-                      </p>
-                    </div>
+              {campanha.tipo !== 'VAQUINHA' && (
+                <>
+                  <div className="sm:col-span-2">
+                    <dt className="text-sm font-medium text-gray-500">Busca Doações?</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {campanha.busca_doacoes ? 'Sim' : 'Não'}
+                    </dd>
                   </div>
-                </dd>
-              </div>
+
+                  <div className="sm:col-span-2">
+                    <dt className="text-sm font-medium text-gray-500">Itens Necessários</dt>
+                    <dd className="mt-2">
+                      {campanha.itens_necessarios.length === 0 ? (
+                        <p className="text-sm text-gray-500 italic">Nenhum item necessário cadastrado</p>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          {campanha.itens_necessarios.map((item) => (
+                            <div
+                              key={item.id}
+                              className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-gray-400"
+                            >
+                              <div className="flex-1 truncate">
+                                <div className="flex items-center space-x-3">
+                                  <h3 className="text-sm font-medium text-gray-900">{item.nome}</h3>
+                                </div>
+                                {item.descricao && (
+                                  <p className="mt-1 text-sm text-gray-500">{item.descricao}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </dd>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <dt className="text-sm font-medium text-gray-500">Pontos de Coleta</dt>
+                    <dd className="mt-2">
+                      {campanha.pontos_coleta.length === 0 ? (
+                        <p className="text-sm text-gray-500 italic">Nenhum ponto de coleta cadastrado</p>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          {campanha.pontos_coleta.map((ponto) => (
+                            <div
+                              key={ponto.id}
+                              className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-gray-400"
+                            >
+                              <div className="flex-1">
+                                <h3 className="text-sm font-medium text-gray-900">{ponto.nome}</h3>
+                                <div className="mt-2 space-y-1">
+                                  <p className="text-sm text-gray-500">
+                                    <span className="font-medium">Endereço:</span> {ponto.endereco}
+                                  </p>
+                                  <p className="text-sm text-gray-500">
+                                    <span className="font-medium">Horário:</span> {ponto.horario}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </dd>
+                  </div>
+                </>
+              )}
+
+              {campanha.tipo === 'VAQUINHA' && (
+                <div className="sm:col-span-2">
+                  <dt className="text-sm font-medium text-gray-500">Estatísticas</dt>
+                  <dd className="mt-1">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white overflow-hidden rounded-lg border border-gray-200 p-4">
+                        <h4 className="text-sm font-medium text-gray-500 truncate">
+                          Total de Doações
+                        </h4>
+                        <p className="mt-1 text-3xl font-semibold text-gray-900">
+                          R$ {estatisticas.totalDoacoes.toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="bg-white overflow-hidden rounded-lg border border-gray-200 p-4">
+                        <h4 className="text-sm font-medium text-gray-500 truncate">
+                          Número de Doadores
+                        </h4>
+                        <p className="mt-1 text-3xl font-semibold text-gray-900">
+                          {estatisticas.numeroDoacoes}
+                        </p>
+                      </div>
+                    </div>
+                  </dd>
+                </div>
+              )}
             </dl>
           </div>
         </div>
 
-        <div className="mt-8">
-          <h4 className="text-lg font-medium text-gray-900">Fazer uma doação</h4>
-          {campanha.status !== 'ATIVA' ? (
-            <div className="mt-4 rounded-md bg-yellow-50 p-4">
+        {campanha.tipo === 'VAQUINHA' ? (
+          <div className="mt-8">
+            <h4 className="text-lg font-medium text-gray-900">Fazer uma doação</h4>
+            {campanha.status !== 'ATIVA' ? (
+              <div className="mt-4 rounded-md bg-yellow-50 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.485 2.495c.873-1.562 3.157-1.562 4.03 0l6.28 11.226c.875 1.562-.217 3.519-2.015 3.519H4.22c-1.798 0-2.89-1.957-2.015-3.519l6.28-11.226zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-yellow-800">
+                      {campanha.status === 'AGUARDANDO'
+                        ? 'Esta campanha ainda não foi iniciada'
+                        : 'Esta campanha já foi encerrada'}
+                    </h3>
+                    <div className="mt-2 text-sm text-yellow-700">
+                      <p>
+                        {campanha.status === 'AGUARDANDO'
+                          ? `A campanha iniciará em ${new Date(campanha.data_inicio).toLocaleDateString()}`
+                          : `A campanha foi encerrada em ${new Date(campanha.data_fim).toLocaleDateString()}`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+                <div>
+                  <label htmlFor="descricao" className="block text-sm font-medium text-gray-700">
+                    Descrição
+                  </label>
+                  <textarea
+                    id="descricao"
+                    name="descricao"
+                    rows={3}
+                    required
+                    value={formData.descricao}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
+                    placeholder="Descreva sua doação..."
+                  />
+                </div>
+                <div>
+                  <label htmlFor="valor" className="block text-sm font-medium text-gray-700">
+                    Valor
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 sm:text-sm">R$</span>
+                    </div>
+                    <input
+                      type="number"
+                      id="valor"
+                      name="valor"
+                      required
+                      min="1"
+                      step="0.01"
+                      value={formData.valor}
+                      onChange={handleInputChange}
+                      className="pl-8 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
+                      placeholder="0,00"
+                    />
+                  </div>
+                </div>
+
+                {formError && (
+                  <div className="rounded-md bg-red-50 p-4">
+                    <div className="text-sm text-red-700">{formError}</div>
+                  </div>
+                )}
+
+                <div>
+                  <button
+                    type="submit"
+                    disabled={formLoading}
+                    className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  >
+                    {formLoading ? 'Enviando...' : 'Fazer Doação'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        ) : (
+          <div className="mt-8">
+            <h4 className="text-lg font-medium text-gray-900">Como doar</h4>
+            <div className="mt-4 rounded-md bg-blue-50 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.485 2.495c.873-1.562 3.157-1.562 4.03 0l6.28 11.226c.875 1.562-.217 3.519-2.015 3.519H4.22c-1.798 0-2.89-1.957-2.015-3.519l6.28-11.226zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-yellow-800">
-                    {campanha.status === 'AGUARDANDO'
-                      ? 'Esta campanha ainda não foi iniciada'
-                      : 'Esta campanha já foi encerrada'}
+                  <h3 className="text-sm font-medium text-blue-800">
+                    Como participar desta campanha
                   </h3>
-                  <div className="mt-2 text-sm text-yellow-700">
+                  <div className="mt-2 text-sm text-blue-700">
                     <p>
-                      {campanha.status === 'AGUARDANDO'
-                        ? `A campanha iniciará em ${new Date(campanha.data_inicio).toLocaleDateString()}`
-                        : `A campanha foi encerrada em ${new Date(campanha.data_fim).toLocaleDateString()}`}
+                      {campanha.busca_doacoes
+                        ? 'A instituição irá buscar as doações em sua residência. Entre em contato para agendar.'
+                        : 'Leve suas doações até um dos pontos de coleta listados acima.'}
                     </p>
+                  </div>
+                  <div className="mt-4">
+                    <div className="flex space-x-3">
+                      <a
+                        href={`mailto:${campanha.instituicao.email}`}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200"
+                      >
+                        Entrar em contato
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-              <div>
-                <label htmlFor="descricao" className="block text-sm font-medium text-gray-700">
-                  Descrição
-                </label>
-                <textarea
-                  id="descricao"
-                  name="descricao"
-                  rows={3}
-                  required
-                  value={formData.descricao}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
-              <div>
-                <label htmlFor="quantidade" className="block text-sm font-medium text-gray-700">
-                  Quantidade
-                </label>
-                <input
-                  type="number"
-                  id="quantidade"
-                  name="quantidade"
-                  required
-                  min="1"
-                  value={formData.quantidade}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
-              <div>
-                <label htmlFor="foto_url" className="block text-sm font-medium text-gray-700">
-                  URL da Foto (opcional)
-                </label>
-                <input
-                  type="url"
-                  id="foto_url"
-                  name="foto_url"
-                  value={formData.foto_url}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
-
-              {formError && (
-                <div className="rounded-md bg-red-50 p-4">
-                  <div className="text-sm text-red-700">{formError}</div>
-                </div>
-              )}
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={formLoading}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-                >
-                  {formLoading ? 'Enviando...' : 'Fazer Doação'}
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="mt-8">
           <h4 className="text-lg font-medium text-gray-900">Doações Recebidas</h4>
@@ -359,9 +529,15 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
                       <p className="mt-1 text-sm text-gray-500">
                         {doacao.descricao}
                       </p>
-                      <p className="mt-1 text-sm text-gray-500">
-                        Quantidade: {doacao.quantidade}
-                      </p>
+                      {campanha.tipo === 'VAQUINHA' ? (
+                        <p className="mt-1 text-sm text-gray-500">
+                          Valor: R$ {doacao.valor?.toFixed(2)}
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-sm text-gray-500">
+                          Quantidade: {doacao.quantidade}
+                        </p>
+                      )}
                       <p className="mt-1 text-sm text-gray-500">
                         Data: {new Date(doacao.data_doacao).toLocaleDateString()}
                       </p>
@@ -379,6 +555,16 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
             )}
           </div>
         </div>
+
+        {campanha?.tipo === 'VAQUINHA' && showPixModal && (
+          <PixModal
+            isOpen={showPixModal}
+            onClose={() => setShowPixModal(false)}
+            valor={parseFloat(formData.valor || '0')}
+            onPaymentComplete={realizarDoacao}
+            campanha={campanha}
+          />
+        )}
       </div>
     </div>
   )
