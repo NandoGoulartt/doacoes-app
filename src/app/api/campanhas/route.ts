@@ -75,7 +75,7 @@ export async function GET(request: Request) {
     })
 
     return NextResponse.json(campanhasComStatus)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Erro ao listar campanhas' },
       { status: 500 }
