@@ -80,3 +80,47 @@ npm run dev
 ## Licença
 
 MIT
+
+## Deploy na Vercel com Prisma e PostgreSQL
+
+### 1. Configure o banco de dados
+- Crie um banco PostgreSQL (pode ser Neon, Supabase, Railway, Vercel Postgres, etc).
+- Copie a connection string (exemplo: `postgresql://usuario:senha@host:5432/banco?sslmode=require`).
+
+### 2. Configure as variáveis de ambiente na Vercel
+- No painel do projeto na Vercel, vá em **Settings > Environment Variables**.
+- Adicione:
+  - `DATABASE_URL` com a connection string do banco
+  - `JWT_SECRET` com uma string segura
+
+### 3. Deploy do projeto
+- Faça o deploy normalmente pela Vercel (conectando o repositório).
+- O comando de build já está configurado para `prisma generate && next build`.
+
+### 4. Rode as migrations manualmente
+> **Importante:** Não coloque `prisma migrate deploy` no comando de build!
+
+Após o deploy, rode localmente:
+
+```bash
+npx prisma migrate deploy
+```
+
+- Use a mesma `DATABASE_URL` configurada na Vercel (você pode copiar do painel de variáveis de ambiente).
+- Isso irá criar/atualizar as tabelas no banco de produção.
+
+### 5. Novas migrations
+- Sempre que criar/alterar migrations, rode novamente:
+
+```bash
+npx prisma migrate deploy
+```
+
+### 6. Dicas
+- Nunca coloque a connection string diretamente no código, sempre use variáveis de ambiente.
+- Use sempre `?sslmode=require` no final da connection string para produção.
+- Se quiser automatizar, use um workflow de CI/CD para rodar as migrations após o deploy (não no build).
+
+---
+
+Se precisar de exemplos para integração com Neon, Supabase, Railway ou Vercel Postgres, consulte a documentação oficial ou peça ajuda aqui!
