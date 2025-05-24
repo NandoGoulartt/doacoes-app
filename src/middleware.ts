@@ -92,5 +92,7 @@ export const config = {
     '/api/doacoes/:path*',
     '/api/auth/me',
     '/perfil',
+    '/minhas-doacoes',
+    '/api/doacoes',
   ],
 } 

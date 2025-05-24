@@ -25,6 +25,7 @@ export async function GET(request: Request) {
             id: true,
             titulo: true,
             descricao: true,
+            tipo: true,
             instituicao: {
               select: {
                 id: true,
@@ -34,6 +35,9 @@ export async function GET(request: Request) {
             }
           }
         }
+      },
+      orderBy: {
+        data_doacao: 'desc'
       }
     })
 
