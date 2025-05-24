@@ -12,8 +12,9 @@ const doacaoSchema = z.object({
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const token = request.headers.get('cookie')?.split('auth_token=')[1]
     if (!token) {
@@ -26,7 +27,7 @@ export async function POST(
     }
 
     const campanha = await prisma.campanha.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         tipo: true,
@@ -77,7 +78,7 @@ export async function POST(
         valor: validatedData.valor,
         quantidade: validatedData.quantidade,
         foto_url: validatedData.foto_url,
-        campanha_id: params.id,
+        campanha_id: id,
         doador_id: payload.user_id,
       },
       include: {
@@ -108,12 +109,13 @@ export async function POST(
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const doacoes = await prisma.doacao.findMany({
       where: {
-        campanha_id: params.id,
+        campanha_id: id,
       },
       include: {
         doador: {
