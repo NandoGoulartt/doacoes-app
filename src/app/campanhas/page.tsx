@@ -45,6 +45,7 @@ export default function CampanhasPage() {
     tipo: '',
     data_inicio: '',
     data_fim: '',
+    status: 'ATIVA'
   })
 
   useEffect(() => {
@@ -105,6 +106,12 @@ export default function CampanhasPage() {
       )
     }
 
+    if (filtros.status && filtros.status !== 'TODAS') {
+      campanhasFiltradas = campanhasFiltradas.filter(campanha =>
+        campanha.status === filtros.status
+      )
+    }
+
     setCampanhasFiltradas(campanhasFiltradas)
   }
 
@@ -135,14 +142,10 @@ export default function CampanhasPage() {
         </div>
 
         <div className="mt-10 bg-white shadow-lg rounded-lg p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-6">Filtros de Busca</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="relative">
-              <label htmlFor="titulo" className="block text-sm font-medium text-gray-700 mb-2">
-                Nome da Campanha
-              </label>
-              <div className="relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="relative col-span-1 md:col-span-2 lg:col-span-1">
+              <div className="flex items-center bg-white rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
+                <div className="pl-3">
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -153,80 +156,65 @@ export default function CampanhasPage() {
                   id="titulo"
                   value={filtros.titulo}
                   onChange={handleFiltroChange}
-                  placeholder="Buscar por nome"
-                  className="block w-full pl-10 pr-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white"
+                  placeholder="Buscar por nome da campanha"
+                  className="block w-full pl-2 pr-3 py-2 text-base border-0 focus:outline-none focus:ring-0 sm:text-sm"
                 />
               </div>
             </div>
 
-            <div className="relative">
-              <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo de Campanha
-              </label>
-              <div className="relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="relative">
+                <select
+                  name="status"
+                  id="status"
+                  value={filtros.status}
+                  onChange={handleFiltroChange}
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
+                >
+                  <option value="TODAS">📊 Todas</option>
+                  <option value="ATIVA">✅ Ativas</option>
+                  <option value="ENCERRADA">🔒 Encerradas</option>
+                </select>
+              </div>
+
+              <div className="relative">
                 <select
                   name="tipo"
                   id="tipo"
                   value={filtros.tipo}
                   onChange={handleFiltroChange}
-                  className="block w-full pl-10 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white"
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
                 >
-                  <option value="">Todos os tipos</option>
+                  <option value="">📦 Todos os tipos</option>
                   <option value="VAQUINHA">💰 Vaquinha</option>
                   <option value="ALIMENTE">🥫 Alimento</option>
                   <option value="ROUPA">👕 Roupa</option>
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
               </div>
             </div>
 
-            <div className="relative">
-              <label htmlFor="data_inicio" className="block text-sm font-medium text-gray-700 mb-2">
-                Data Início
-              </label>
-              <div className="relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="relative">
                 <input
                   type="date"
                   name="data_inicio"
                   id="data_inicio"
                   value={filtros.data_inicio}
                   onChange={handleFiltroChange}
-                  className="block w-full pl-10 pr-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm"
+                  placeholder="Data Início"
+                  className="block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
                 />
               </div>
-            </div>
 
-            <div className="relative">
-              <label htmlFor="data_fim" className="block text-sm font-medium text-gray-700 mb-2">
-                Data Fim
-              </label>
-              <div className="relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
+              <div className="relative">
                 <input
                   type="date"
                   name="data_fim"
                   id="data_fim"
                   value={filtros.data_fim}
                   onChange={handleFiltroChange}
-                  className="block w-full pl-10 pr-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm"
+                  placeholder="Data Fim"
+                  className="block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
                 />
               </div>
             </div>

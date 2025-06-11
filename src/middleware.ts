@@ -115,5 +115,8 @@ export const config = {
     '/minhas-doacoes',
     '/minhas-campanhas',
     '/api/doacoes',
+    '/api/estatisticas',
+    '/api/campanhas/recentes',
+    '/api/doacoes/recentes'
   ],
 } 
