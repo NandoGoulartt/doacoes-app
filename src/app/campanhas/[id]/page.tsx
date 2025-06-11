@@ -416,7 +416,7 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
                     required
                     value={formData.descricao}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
+                    className="block w-full px-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white"
                     placeholder="Descreva sua doação..."
                   />
                 </div>
@@ -437,7 +437,7 @@ export default function CampanhaPage({ params }: { params: Promise<{ id: string 
                       step="0.01"
                       value={formData.valor}
                       onChange={handleInputChange}
-                      className="pl-8 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
+                      className="block w-full pl-8 pr-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white"
                       placeholder="0,00"
                     />
                   </div>

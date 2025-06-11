@@ -1,19 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
-
-interface ItemNecessario {
-  id: string
-  nome: string
-  descricao?: string
-}
+import { useState, useEffect } from 'react'
 
 interface PontoColeta {
   id: string
   nome: string
   endereco: string
   horario: string
+}
+
+interface ItemNecessario {
+  id: string
+  nome: string
+  descricao?: string
 }
 
 interface Campanha {
@@ -37,26 +37,27 @@ interface Campanha {
 
 export default function CampanhasPage() {
   const [campanhas, setCampanhas] = useState<Campanha[]>([])
+  const [campanhasFiltradas, setCampanhasFiltradas] = useState<Campanha[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filtros, setFiltros] = useState({
-    localizacao: '',
+    titulo: '',
+    tipo: '',
     data_inicio: '',
     data_fim: '',
   })
 
   useEffect(() => {
     loadCampanhas()
-  }, [filtros])
+  }, [])
+
+  useEffect(() => {
+    filtrarCampanhas()
+  }, [campanhas, filtros])
 
   async function loadCampanhas() {
     try {
-      const params = new URLSearchParams()
-      if (filtros.localizacao) params.append('localizacao', filtros.localizacao)
-      if (filtros.data_inicio) params.append('data_inicio', filtros.data_inicio)
-      if (filtros.data_fim) params.append('data_fim', filtros.data_fim)
-
-      const response = await fetch(`/api/campanhas?${params.toString()}`)
+      const response = await fetch('/api/campanhas')
       const data = await response.json()
 
       if (!response.ok) {
@@ -64,6 +65,7 @@ export default function CampanhasPage() {
       }
 
       setCampanhas(data)
+      setCampanhasFiltradas(data)
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Erro ao carregar campanhas')
     } finally {
@@ -71,15 +73,51 @@ export default function CampanhasPage() {
     }
   }
 
-  function handleFiltroChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFiltroChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target
     setFiltros(prev => ({ ...prev, [name]: value }))
   }
 
+  function filtrarCampanhas() {
+    let campanhasFiltradas = [...campanhas]
+
+    if (filtros.titulo) {
+      campanhasFiltradas = campanhasFiltradas.filter(campanha =>
+        campanha.titulo.toLowerCase().includes(filtros.titulo.toLowerCase())
+      )
+    }
+
+    if (filtros.tipo) {
+      campanhasFiltradas = campanhasFiltradas.filter(campanha =>
+        campanha.tipo === filtros.tipo
+      )
+    }
+
+    if (filtros.data_inicio) {
+      campanhasFiltradas = campanhasFiltradas.filter(campanha =>
+        new Date(campanha.data_inicio) >= new Date(filtros.data_inicio)
+      )
+    }
+
+    if (filtros.data_fim) {
+      campanhasFiltradas = campanhasFiltradas.filter(campanha =>
+        new Date(campanha.data_fim) <= new Date(filtros.data_fim)
+      )
+    }
+
+    setCampanhasFiltradas(campanhasFiltradas)
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="text-center">Carregando...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center space-x-2 text-indigo-600">
+          <svg className="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span className="text-lg font-medium">Carregando campanhas...</span>
+        </div>
       </div>
     )
   }
@@ -89,57 +127,148 @@ export default function CampanhasPage() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center">
           <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Campanhas Ativas
+            Campanhas de Doação
           </h2>
           <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-            Encontre campanhas de doação próximas a você
+            Encontre campanhas e faça a diferença na vida de quem precisa
           </p>
         </div>
 
-        <div className="mt-8 flex flex-col sm:flex-row gap-4">
-          <input
-            type="text"
-            name="localizacao"
-            value={filtros.localizacao}
-            onChange={handleFiltroChange}
-            placeholder="Localização"
-            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
-          <input
-            type="date"
-            name="data_inicio"
-            value={filtros.data_inicio}
-            onChange={handleFiltroChange}
-            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
-          <input
-            type="date"
-            name="data_fim"
-            value={filtros.data_fim}
-            onChange={handleFiltroChange}
-            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
+        <div className="mt-10 bg-white shadow-lg rounded-lg p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-6">Filtros de Busca</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="relative">
+              <label htmlFor="titulo" className="block text-sm font-medium text-gray-700 mb-2">
+                Nome da Campanha
+              </label>
+              <div className="relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  name="titulo"
+                  id="titulo"
+                  value={filtros.titulo}
+                  onChange={handleFiltroChange}
+                  placeholder="Buscar por nome"
+                  className="block w-full pl-10 pr-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="relative">
+              <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 mb-2">
+                Tipo de Campanha
+              </label>
+              <div className="relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </div>
+                <select
+                  name="tipo"
+                  id="tipo"
+                  value={filtros.tipo}
+                  onChange={handleFiltroChange}
+                  className="block w-full pl-10 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white"
+                >
+                  <option value="">Todos os tipos</option>
+                  <option value="VAQUINHA">💰 Vaquinha</option>
+                  <option value="ALIMENTE">🥫 Alimento</option>
+                  <option value="ROUPA">👕 Roupa</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <label htmlFor="data_inicio" className="block text-sm font-medium text-gray-700 mb-2">
+                Data Início
+              </label>
+              <div className="relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <input
+                  type="date"
+                  name="data_inicio"
+                  id="data_inicio"
+                  value={filtros.data_inicio}
+                  onChange={handleFiltroChange}
+                  className="block w-full pl-10 pr-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="relative">
+              <label htmlFor="data_fim" className="block text-sm font-medium text-gray-700 mb-2">
+                Data Fim
+              </label>
+              <div className="relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <input
+                  type="date"
+                  name="data_fim"
+                  id="data_fim"
+                  value={filtros.data_fim}
+                  onChange={handleFiltroChange}
+                  className="block w-full pl-10 pr-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         {error && (
           <div className="mt-8 rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-700">{error}</div>
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  Erro ao carregar campanhas
+                </h3>
+                <div className="mt-2 text-sm text-red-700">
+                  {error}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
         <div className="mt-8 grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-          {campanhas.map((campanha) => (
+          {campanhasFiltradas.map((campanha) => (
             <div
               key={campanha.id}
-              className="bg-white overflow-hidden shadow rounded-lg"
+              className="bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl"
             >
-              <div className="p-5">
+              <div className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="text-lg font-medium text-gray-900 truncate">
                       {campanha.titulo}
                     </h3>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-gray-500 flex items-center">
+                      <svg className="h-4 w-4 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
                       {campanha.instituicao.nome}
                     </p>
                   </div>
@@ -159,12 +288,18 @@ export default function CampanhasPage() {
                 </div>
 
                 <div className="mt-4">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {campanha.tipo === 'VAQUINHA'
-                      ? 'Vaquinha'
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    campanha.tipo === 'VAQUINHA'
+                      ? 'bg-purple-100 text-purple-800'
                       : campanha.tipo === 'ALIMENTE'
-                        ? 'Alimente'
-                        : 'Roupa'}
+                        ? 'bg-orange-100 text-orange-800'
+                        : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {campanha.tipo === 'VAQUINHA'
+                      ? '💰 Vaquinha'
+                      : campanha.tipo === 'ALIMENTE'
+                        ? '🥫 Alimento'
+                        : '👕 Roupa'}
                   </span>
                 </div>
 
@@ -172,27 +307,7 @@ export default function CampanhasPage() {
                   {campanha.descricao}
                 </p>
 
-                {campanha.tipo !== 'VAQUINHA' && (
-                  <div className="mt-4">
-                    <h4 className="text-sm font-medium text-gray-900">
-                      Itens Necessários
-                    </h4>
-                    <div className="mt-2">
-                      <div className="flex flex-wrap gap-2">
-                        {campanha.itens_necessarios.map((item) => (
-                          <span
-                            key={item.id}
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                          >
-                            {item.nome}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-4">
+                <div className="mt-4 space-y-2">
                   <div className="flex items-center text-sm text-gray-500">
                     <svg
                       className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
@@ -215,7 +330,7 @@ export default function CampanhasPage() {
                     </svg>
                     {campanha.localizacao}
                   </div>
-                  <div className="mt-2 flex items-center text-sm text-gray-500">
+                  <div className="flex items-center text-sm text-gray-500">
                     <svg
                       className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
                       fill="none"
@@ -234,12 +349,15 @@ export default function CampanhasPage() {
                   </div>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-6">
                   <Link
                     href={`/campanhas/${campanha.id}`}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
                   >
                     Ver Detalhes
+                    <svg className="ml-2 -mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </Link>
                 </div>
               </div>
@@ -247,9 +365,15 @@ export default function CampanhasPage() {
           ))}
         </div>
 
-        {campanhas.length === 0 && !error && (
-          <div className="mt-8 text-center text-gray-500">
-            Nenhuma campanha encontrada
+        {campanhasFiltradas.length === 0 && !error && (
+          <div className="mt-8 text-center">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhuma campanha encontrada</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Tente ajustar os filtros para encontrar mais campanhas.
+            </p>
           </div>
         )}
       </div>

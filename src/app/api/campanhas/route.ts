@@ -26,21 +26,9 @@ const campanhaSchema = z.object({
   pontos_coleta: z.array(pontoColetaSchema).optional(),
 })
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url)
-    const localizacao = searchParams.get('localizacao')
-    const data_inicio = searchParams.get('data_inicio')
-    const data_fim = searchParams.get('data_fim')
-
-    const where = {
-      ...(localizacao && { localizacao: { contains: localizacao, mode: 'insensitive' as const } }),
-      ...(data_inicio && { data_inicio: { gte: new Date(data_inicio) } }),
-      ...(data_fim && { data_fim: { lte: new Date(data_fim) } }),
-    }
-
     const campanhas = await prisma.campanha.findMany({
-      where,
       include: {
         instituicao: {
           select: {
