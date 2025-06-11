@@ -46,19 +46,31 @@ export async function verify(token: string): Promise<JWTPayload> {
 }
 
 export async function middleware(request: NextRequest) {
+  const token = request.cookies.get('auth_token')?.value
+  const isLoginPage = request.nextUrl.pathname.startsWith('/login')
+
+  if (isLoginPage && token) {
+    try {
+      await verify(token)
+      console.log('Usuário já autenticado, redirecionando para dashboard')
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    } catch {
+      console.log('Token inválido na página de login, permitindo acesso')
+      return NextResponse.next()
+    }
+  }
+
   if (
-    request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/cadastro') ||
     request.nextUrl.pathname.startsWith('/esqueci-senha') ||
     request.nextUrl.pathname.startsWith('/redefinir-senha') ||
     request.nextUrl.pathname.startsWith('/api/auth/esqueci-senha') ||
     request.nextUrl.pathname.startsWith('/api/auth/redefinir-senha') ||
-    request.nextUrl.pathname === '/'
+    request.nextUrl.pathname === '/' ||
+    isLoginPage
   ) {
     return NextResponse.next()
   }
-
-  const token = request.cookies.get('auth_token')?.value
 
   if (!token) {
     console.log('Token não encontrado, redirecionando para login')
@@ -93,6 +105,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    '/login',
     '/dashboard/:path*',
     '/campanhas/:path*',
     '/api/campanhas/:path*',
