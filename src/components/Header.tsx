@@ -2,12 +2,32 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+interface User {
+  tipo: 'DOADOR' | 'INSTITUICAO'
+}
 
 export default function Header() {
   const pathname = usePathname()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const response = await fetch('/api/auth/me')
+        const data = await response.json()
+        if (response.ok) {
+          setUser(data.user)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error)
+      }
+    }
+    loadUser()
+  }, [])
 
   async function handleLogout() {
     setLoading(true)
@@ -54,6 +74,18 @@ export default function Header() {
             >
               Campanhas
             </Link>
+            {user?.tipo === 'INSTITUICAO' && (
+              <Link
+                href="/minhas-campanhas"
+                className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                  pathname === '/minhas-campanhas'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Minhas Campanhas
+              </Link>
+            )}
             <Link
               href="/minhas-doacoes"
               className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
@@ -103,6 +135,18 @@ export default function Header() {
           >
             Campanhas
           </Link>
+          {user?.tipo === 'INSTITUICAO' && (
+            <Link
+              href="/minhas-campanhas"
+              className={`text-sm font-medium ${
+                pathname === '/minhas-campanhas'
+                  ? 'text-indigo-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Minhas Campanhas
+            </Link>
+          )}
           <Link
             href="/minhas-doacoes"
             className={`text-sm font-medium ${

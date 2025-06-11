@@ -20,6 +20,7 @@ interface Doacao {
       id: string
       nome: string
       email: string
+      tipo: 'DOADOR' | 'INSTITUICAO'
     }
   }
 }
@@ -118,9 +119,21 @@ export default function MinhasDoacoesPage() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium text-indigo-600">
-                      {doacao.campanha.titulo}
-                    </h2>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <h4 className="text-lg font-medium text-gray-900">
+                          {doacao.campanha.titulo}
+                        </h4>
+                        {doacao.campanha.instituicao.tipo === 'INSTITUICAO' && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Instituição
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       doacao.campanha.tipo === 'VAQUINHA' 
                         ? 'bg-green-100 text-green-800'

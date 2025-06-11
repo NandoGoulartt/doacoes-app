@@ -31,6 +31,7 @@ export async function GET(request: Request) {
                 id: true,
                 nome: true,
                 email: true,
+                tipo: true,
               }
             }
           }
@@ -68,9 +69,9 @@ export async function POST(request: Request) {
 
     const user = JSON.parse(userHeader) as JWTPayload
 
-    if (user.tipo !== 'DOADOR') {
+    if (user.tipo !== 'DOADOR' && user.tipo !== 'INSTITUICAO') {
       return NextResponse.json(
-        { error: 'Apenas doadores podem criar doações' },
+        { error: 'Usuário não autorizado a fazer doações' },
         { status: 403 }
       )
     }
@@ -123,6 +124,7 @@ export async function POST(request: Request) {
                 id: true,
                 nome: true,
                 email: true,
+                tipo: true,
               }
             }
           }

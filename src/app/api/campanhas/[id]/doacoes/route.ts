@@ -22,8 +22,8 @@ export async function POST(
     }
 
     const payload = await verify(token)
-    if (payload.tipo !== 'DOADOR') {
-      return NextResponse.json({ error: 'Apenas pessoas físicas podem fazer doações' }, { status: 403 })
+    if (payload.tipo !== 'DOADOR' && payload.tipo !== 'INSTITUICAO') {
+      return NextResponse.json({ error: 'Usuário não autorizado a fazer doações' }, { status: 403 })
     }
 
     const campanha = await prisma.campanha.findUnique({
@@ -86,6 +86,7 @@ export async function POST(
           select: {
             id: true,
             nome: true,
+            tipo: true,
           },
         },
       },
@@ -122,6 +123,7 @@ export async function GET(
           select: {
             id: true,
             nome: true,
+            tipo: true,
           },
         },
       },

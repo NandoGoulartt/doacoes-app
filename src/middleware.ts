@@ -113,6 +113,7 @@ export const config = {
     '/api/auth/me',
     '/perfil',
     '/minhas-doacoes',
+    '/minhas-campanhas',
     '/api/doacoes',
   ],
 } 
