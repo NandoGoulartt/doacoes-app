@@ -8,8 +8,13 @@ export interface JWTPayload {
   user_id: string
   email: string
   tipo: 'DOADOR' | 'INSTITUICAO'
-  iat: number
-  [key: string]: string | number | undefined // Permite campos adicionais de string ou número
+  [key: string]: string | undefined
+}
+
+interface JoseJWTPayload extends jose.JWTPayload {
+  user_id?: string
+  email?: string
+  tipo?: 'DOADOR' | 'INSTITUICAO'
 }
 
 export function getJwtSecretKey(): Uint8Array {
@@ -21,7 +26,7 @@ export function getJwtSecretKey(): Uint8Array {
 
 export async function sign(payload: JWTPayload): Promise<string> {
   const secret = getJwtSecretKey()
-  return new jose.SignJWT(payload)
+  return new jose.SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('7d')
     .sign(secret)
@@ -29,20 +34,25 @@ export async function sign(payload: JWTPayload): Promise<string> {
 
 export async function verify(token: string): Promise<JWTPayload> {
   try {
-    const secret = getJwtSecretKey()
-    const { payload } = await jose.jwtVerify(token, secret)
-    return payload as JWTPayload
+    const { payload } = await jose.jwtVerify(token, getJwtSecretKey())
+    const { user_id, email, tipo, ...rest } = payload as JoseJWTPayload
+    if (!user_id || !email || !tipo) {
+      throw new Error('Token inválido')
+    }
+    return { user_id, email, tipo, ...rest } as JWTPayload
   } catch (error) {
-    console.error('Erro ao verificar token:', error)
     throw error
   }
 }
 
 export async function middleware(request: NextRequest) {
-  // Não protege rotas públicas
   if (
     request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/cadastro') ||
+    request.nextUrl.pathname.startsWith('/esqueci-senha') ||
+    request.nextUrl.pathname.startsWith('/redefinir-senha') ||
+    request.nextUrl.pathname.startsWith('/api/auth/esqueci-senha') ||
+    request.nextUrl.pathname.startsWith('/api/auth/redefinir-senha') ||
     request.nextUrl.pathname === '/'
   ) {
     return NextResponse.next()
@@ -59,8 +69,6 @@ export async function middleware(request: NextRequest) {
     const payload = await verify(token)
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('user', JSON.stringify(payload))
-
-    // Adiciona o token no header para debug
     requestHeaders.set('x-auth-token', token)
 
     const response = NextResponse.next({
@@ -69,12 +77,11 @@ export async function middleware(request: NextRequest) {
       },
     })
 
-    // Garante que o cookie seja mantido
     response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 dias
+      maxAge: 7 * 24 * 60 * 60,
     })
 
     return response

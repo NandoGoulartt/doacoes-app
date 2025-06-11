@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import * as jwt from 'jsonwebtoken'
+import * as jose from 'jose'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'seu-segredo-aqui'
 
@@ -8,22 +8,41 @@ export interface JWTPayload {
   user_id: string
   email: string
   tipo: 'DOADOR' | 'INSTITUICAO'
+  [key: string]: string | undefined
 }
 
-export function getJwtSecretKey(): string {
+interface JoseJWTPayload extends jose.JWTPayload {
+  user_id?: string
+  email?: string
+  tipo?: 'DOADOR' | 'INSTITUICAO'
+}
+
+export function getJwtSecretKey(): Uint8Array {
   if (!process.env.JWT_SECRET) {
     console.warn('JWT_SECRET não configurado, usando valor padrão')
   }
-  return JWT_SECRET
+  return new TextEncoder().encode(JWT_SECRET)
 }
 
 export async function sign(payload: JWTPayload): Promise<string> {
-  return jwt.sign(payload, getJwtSecretKey(), { expiresIn: '7d' })
+  const secret = getJwtSecretKey()
+  return new jose.SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('7d')
+    .sign(secret)
 }
 
 export async function verify(token: string): Promise<JWTPayload> {
-  const payload = jwt.verify(token, getJwtSecretKey()) as JWTPayload
-  return payload
+  try {
+    const { payload } = await jose.jwtVerify(token, getJwtSecretKey())
+    const { user_id, email, tipo, ...rest } = payload as JoseJWTPayload
+    if (!user_id || !email || !tipo) {
+      throw new Error('Token inválido')
+    }
+    return { user_id, email, tipo, ...rest } as JWTPayload
+  } catch (error) {
+    throw error
+  }
 }
 
 export async function middleware(request: NextRequest) {

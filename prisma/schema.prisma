@@ -32,6 +32,8 @@ model User {
   tipo       TipoUsuario
   campanhas  Campanha[]  @relation("InstituicaoCampanhas")
   doacoes    Doacao[]    @relation("DoadorDoacoes")
+  reset_token String?    @unique
+  reset_token_expires DateTime?
   created_at DateTime    @default(now())
   updated_at DateTime    @updatedAt
 }
