@@ -19,7 +19,7 @@ export default function NovaCampanhaPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [tipoCampanha, setTipoCampanha] = useState<'VAQUINHA' | 'ALIMENTE' | 'ROUPA'>('VAQUINHA')
+  const [tipoCampanha, setTipoCampanha] = useState<'VAQUINHA' | 'ALIMENTO' | 'ROUPA'>('VAQUINHA')
   const [itensNecessarios, setItensNecessarios] = useState<ItemNecessario[]>([])
   const [pontosColeta, setPontosColeta] = useState<PontoColeta[]>([])
   const [novoItem, setNovoItem] = useState({ nome: '', descricao: '' })
@@ -109,11 +109,11 @@ export default function NovaCampanhaPage() {
                   id="tipo"
                   name="tipo"
                   value={tipoCampanha}
-                  onChange={(e) => setTipoCampanha(e.target.value as 'VAQUINHA' | 'ALIMENTE' | 'ROUPA')}
+                  onChange={(e) => setTipoCampanha(e.target.value as 'VAQUINHA' | 'ALIMENTO' | 'ROUPA')}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
                 >
                   <option value="VAQUINHA">Vaquinha (Doação em dinheiro)</option>
-                  <option value="ALIMENTE">Alimente (Doação de alimentos)</option>
+                  <option value="ALIMENTO">Alimento (Doação de alimentos)</option>
                   <option value="ROUPA">Roupa (Doação de roupas)</option>
                 </select>
               </div>
