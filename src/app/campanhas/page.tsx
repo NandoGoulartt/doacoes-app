@@ -169,7 +169,7 @@ export default function CampanhasPage() {
                   id="status"
                   value={filtros.status}
                   onChange={handleFiltroChange}
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
+                  className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
                 >
                   <option value="TODAS">📊 Todas</option>
                   <option value="ATIVA">✅ Ativas</option>
@@ -183,7 +183,7 @@ export default function CampanhasPage() {
                   id="tipo"
                   value={filtros.tipo}
                   onChange={handleFiltroChange}
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
+                  className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
                 >
                   <option value="">📦 Todos os tipos</option>
                   <option value="VAQUINHA">💰 Vaquinha</option>
@@ -202,7 +202,7 @@ export default function CampanhasPage() {
                   value={filtros.data_inicio}
                   onChange={handleFiltroChange}
                   placeholder="Data Início"
-                  className="block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
+                  className="block w-full pl-3 pr-3 py-2 text-base border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
                 />
               </div>
 
@@ -214,7 +214,7 @@ export default function CampanhasPage() {
                   value={filtros.data_fim}
                   onChange={handleFiltroChange}
                   placeholder="Data Fim"
-                  className="block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
+                  className="block w-full pl-3 pr-3 py-2 text-base border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm"
                 />
               </div>
             </div>

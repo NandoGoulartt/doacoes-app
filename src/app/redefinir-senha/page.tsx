@@ -87,7 +87,7 @@ function RedefinirSenhaForm() {
                   type="password"
                   required
                   minLength={6}
-                  className="block w-full px-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white"
+                  className="block w-full px-3 py-2.5 text-base border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm appearance-none bg-white"
                   placeholder="••••••••"
                 />
               </div>
@@ -104,7 +104,7 @@ function RedefinirSenhaForm() {
                   type="password"
                   required
                   minLength={6}
-                  className="block w-full px-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white"
+                  className="block w-full px-3 py-2.5 text-base border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm appearance-none bg-white"
                   placeholder="••••••••"
                 />
               </div>

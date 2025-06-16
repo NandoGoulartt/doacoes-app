@@ -188,7 +188,7 @@ export default function PerfilPage() {
                   type="email"
                   value={user.email}
                   disabled
-                  className="block w-full px-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-500"
+                  className="block w-full px-3 py-2.5 text-base border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-500"
                 />
               </div>
             </div>
@@ -208,7 +208,7 @@ export default function PerfilPage() {
                       type="text"
                       value={editableNome}
                       onChange={(e) => setEditableNome(e.target.value)}
-                      className="block w-full px-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white"
+                      className="block w-full px-3 py-2.5 text-base border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm appearance-none bg-white"
                     />
                   </div>
                 ) : (
@@ -217,7 +217,7 @@ export default function PerfilPage() {
                       type="text"
                       value={user.nome}
                       disabled
-                      className="block w-full px-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-500"
+                      className="block w-full px-3 py-2.5 text-base border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-500"
                     />
                     <button
                       onClick={handleEditToggle}
@@ -246,7 +246,7 @@ export default function PerfilPage() {
                   type="text"
                   value={user.tipo === 'DOADOR' ? 'Doador' : 'Instituição'}
                   disabled
-                  className="block w-full px-3 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg transition duration-150 ease-in-out sm:text-sm appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-500"
+                  className="block w-full px-3 py-2.5 text-base border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg sm:text-sm appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-500"
                 />
               </div>
             </div>
